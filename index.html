@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Embroidery Designs</title>
+  <meta name="description" content="Machine embroidery designs in DST format. Pay by UPI and download after confirmation.">
+  <meta name="theme-color" content="#7a2e4a">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a href="#/" class="brand"><span class="brand-mark" aria-hidden="true">✿</span><span id="shop-name">Embroidery Designs</span></a>
+      <a href="#/cart" class="cart-link">Cart <span id="cart-count" class="badge is-empty">0</span></a>
+    </div>
+  </header>
+  <div id="demo-banner" class="demo-banner" hidden>
+    Demo mode: sample designs, no real payments. <a href="#/demo-admin">Open demo admin</a>
+  </div>
+
+  <main id="app" class="wrap">
+    <noscript><p>Please enable JavaScript to use this shop.</p></noscript>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>&copy; <span id="year"></span> <span id="footer-name"></span></span>
+      <a id="footer-wa" href="#" target="_blank" rel="noopener">WhatsApp us</a>
+    </div>
+  </footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="config.js"></script>
+  <script src="assets/vendor/qrcode.js"></script>
+  <script src="data/demo-designs.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
