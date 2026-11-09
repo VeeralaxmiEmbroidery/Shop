@@ -363,9 +363,12 @@
       '<p class="muted small">Check the amount is exactly ' + money(total) + ' before you pay. If the QR does not scan, pay to the UPI ID above and add the reference in the note.</p>' +
       '</section>' +
 
-      '<section class="step"><h2><span class="num">3</span> Enter UTR number</h2>' +
-      '<p class="muted small">After paying, open the payment in your UPI app and copy the 12-digit <strong>UTR</strong> (also called UPI Ref No. or UPI transaction ID).</p>' +
-      field('utr', 'UTR / UPI reference number', 'text', '', 'inputmode="numeric" maxlength="14" placeholder="12 digits" autocomplete="off" required') +
+      (C.ASK_UTR === true
+        ? '<section class="step"><h2><span class="num">3</span> Enter UTR number</h2>' +
+          '<p class="muted small">After paying, open the payment in your UPI app and copy the 12-digit <strong>UTR</strong> (also called UPI Ref No. or UPI transaction ID).</p>' +
+          field('utr', 'UTR / UPI reference number', 'text', '', 'inputmode="numeric" maxlength="14" placeholder="12 digits" autocomplete="off" required')
+        : '<section class="step"><h2><span class="num">3</span> After paying</h2>' +
+          '<p>Tap <strong>Place order</strong>. Then send us a <strong>screenshot of your payment</strong> on WhatsApp.</p>') +
       '<div class="form-error" id="form-error" role="alert" hidden></div>' +
       '<button class="btn btn-accent btn-block" type="submit" id="submit">Place order</button>' +
       '</section></form>' +
@@ -466,10 +469,11 @@
     var wa = U.waLink(s.WHATSAPP_NUMBER, U.orderMessage(s.SHOP_NAME, order));
     app.innerHTML =
       '<section class="done"><div class="tick" aria-hidden="true">✓</div><h1>Order placed</h1>' +
-      '<p>Order ID <strong>' + esc(order.orderId) + '</strong> · ' + money(order.total) + ' · UTR ' + esc(order.utr) + '</p>' +
-      '<div class="callout"><strong>One last step:</strong> send us your order on WhatsApp so we can verify it quickly.</div>' +
+      '<p>Order ID <strong>' + esc(order.orderId) + '</strong> · ' + money(order.total) + (order.utr ? ' · UTR ' + esc(order.utr) : '') + '</p>' +
+      '<div class="callout"><strong>One last step:</strong> tap the green button to send us your order on WhatsApp' +
+      (order.utr ? '' : ', then send the <strong>screenshot of your payment</strong> in the same chat') + '.</div>' +
       '<a class="btn btn-wa btn-block" href="' + esc(wa) + '" target="_blank" rel="noopener">Send order on WhatsApp</a>' +
-      '<h2>What happens next</h2><ol class="next"><li>We match your UTR with our bank statement ' + esc(C.VERIFY_TIME_TEXT) + '.</li>' +
+      '<h2>What happens next</h2><ol class="next"><li>We check your payment in our bank account ' + esc(C.VERIFY_TIME_TEXT) + '.</li>' +
       '<li>You get a private download link on WhatsApp.</li><li>Open the link and download your DST files.</li></ol>' +
       '<div class="sum-box">' + order.items.map(function (it) {
         return '<div class="sum-row"><span>' + esc(it.name) + ' <span class="code">' + esc(it.code) + '</span></span><span>' + money(it.price) + '</span></div>';
@@ -561,20 +565,20 @@
     var siteUrl = location.href.split('#')[0];
     app.innerHTML =
       '<h1>Demo admin</h1>' +
-      '<p class="muted">This page imitates the <strong>Orders</strong> tab of the Google Sheet. Tick <em>Paid</em> after checking the UTR in your bank app, then click <em>Send</em> to open WhatsApp with the download link for the customer.</p>' +
+      '<p class="muted">This page imitates the <strong>Orders</strong> tab of the Google Sheet. Tick <em>Paid</em> after finding the payment in your bank app, then click <em>Send</em> to open WhatsApp with the download link for the customer.</p>' +
       (orders.length ? '<div class="table-wrap"><table class="admin"><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>UTR</th><th>Paid</th><th>Send</th></tr></thead><tbody>' +
         orders.map(function (o) {
           var link = o.paid ? U.downloadLink(siteUrl, o.orderId, o.token) : '';
           return '<tr><td><strong>' + esc(o.orderId) + '</strong><div class="muted small">' + esc(new Date(o.created).toLocaleString('en-IN')) + '</div></td>' +
             '<td>' + esc(o.name) + '<div class="muted small">+' + esc(o.phone) + '</div></td>' +
             '<td>' + o.items.map(function (i) { return esc(i.code); }).join(', ') + '</td>' +
-            '<td>' + money(o.total) + '</td><td><code>' + esc(o.utr) + '</code></td>' +
+            '<td>' + money(o.total) + '</td><td>' + (o.utr ? '<code>' + esc(o.utr) + '</code>' : '<span class="muted">-</span>') + '</td>' +
             '<td><input type="checkbox" data-paid="' + esc(o.orderId) + '"' + (o.paid ? ' checked' : '') + ' aria-label="Paid"></td>' +
             '<td>' + (o.paid ? '<a class="btn btn-sm btn-wa" target="_blank" rel="noopener" href="' + esc(U.waLink(o.phone, U.paidMessage(s.SHOP_NAME, o, link, 30))) + '">Send ▶</a>' +
               ' <a class="small" href="' + esc(link) + '">open link</a>' : '<span class="muted small">tick Paid</span>') + '</td></tr>';
         }).join('') + '</tbody></table></div>' +
         '<button class="btn btn-ghost" id="reset">Clear demo orders</button>'
-        : '<div class="center-msg"><p>No demo orders yet. <a href="#/">Add a design to the cart</a> and check out with any 12-digit UTR, e.g. 123456789012.</p></div>');
+        : '<div class="center-msg"><p>No demo orders yet. <a href="#/">Add a design to the cart</a> and check out.</p></div>');
 
     app.querySelectorAll('[data-paid]').forEach(function (cb) {
       cb.onchange = function () { API.demo.setPaid(cb.getAttribute('data-paid'), cb.checked); renderDemoAdmin(); };
