@@ -36,7 +36,7 @@
       var email = String(body.email || '').trim();
       if (!Util.isValidEmail(email) || email.length > 120) errors.email = 'Enter a valid email or leave it blank.';
       var utr = String(body.utr || '').replace(/\s/g, '');
-      if (!Util.isValidUtr(utr)) errors.utr = 'The UTR / UPI reference number has 12 digits.';
+      if (utr ? !Util.isValidUtr(utr) : C.ASK_UTR === true) errors.utr = 'The UTR / UPI reference number has 12 digits.';
       var items = Array.isArray(body.items) ? body.items.map(String) : [];
       items = items.filter(function (c, i) { return c && items.indexOf(c) === i; });
       if (!items.length) errors.items = 'Your cart is empty.';
@@ -73,8 +73,9 @@
       order.items.forEach(function (it, i) {
         lines.push((i + 1) + '. ' + it.code + ' - ' + it.name + ' (' + Util.rupees(it.price) + ')');
       });
-      lines.push('', 'Total paid: ' + Util.rupees(order.total), 'UPI UTR: ' + order.utr, 'Name: ' + order.name,
-        'Please verify and send my download link. Thank you!');
+      lines.push('', 'Total paid: ' + Util.rupees(order.total));
+      lines.push(order.utr ? 'UPI UTR: ' + order.utr : 'Payment screenshot: sending now');
+      lines.push('Name: ' + order.name, 'Please verify and send my download link. Thank you!');
       return lines.join('\n');
     },
     /** Message the shop sends to the customer once paid (mirrors Apps Script). */
@@ -182,7 +183,7 @@
         items.push({ code: d.code, name: d.name, price: Number(d.price) });
       }
       var orders = Demo._orders();
-      if (orders.some(function (o) { return o.utr === clean.utr; })) {
+      if (clean.utr && orders.some(function (o) { return o.utr === clean.utr; })) {
         return Promise.reject(ApiError('This UTR has already been used for another order. Please check the number.'));
       }
       var id = /^[A-Z]{2,8}-[A-Z0-9]{6}$/.test(body.ref || '') && !orders.some(function (o) { return o.orderId === body.ref; })
